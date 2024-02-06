@@ -1,0 +1,111 @@
+---
+title: "Lifespan of Prime Ministers of Canada"
+author: "Hyuk Jang"
+date: Feb 6, 2024
+format: pdf
+editor: visual
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(rvest)
+library(janitor)
+library(dplyr)
+library(stringr)
+library(tibble)
+library(tidyr)
+library(here)
+library(ggplot2)
+```
+
+# Lifespan of Prime Minister's of Canada
+
+The question of interest in this paper is how long each prime minister of Canada has lived. The initial plan of the paper is to identify how long each prime minister has lived and the period of time when they lived.his is so that we can use this data to do further analysis in the future. For this reason we need to find and identify a source of data. We need a source of data that is reliable and has some sort of structure. The [Wikipedia page about prime ministers of Canada](https://en.wikipedia.org/wiki/List_of_prime_ministers_of_Canada) fits both of the criterion's. Below we have a sketch of what we want the data to look like once we have finished cleaning and produced a graph out of it.
+
+![Plan](images/KakaoTalk_Photo_2024-02-06-10-16-45.jpeg){width="300"}
+
+From the website, we scraped the data such as the prime ministers names, birth year, and death year. To do this we have read the website and changed it into html format so that we can use R to clean this data. Within the website scraped, we are only interested in the table that contains names, birth year, and death year of prime ministers of Canada. In the same website there are two tables thus we have made a table named parse_table which imports these data from the html. Then, the data was cleaned so that repeated prime minister names are merged into one so that there is no repetition. Further cleaning was done so that we have prime minister names on one column and their birth year to death year on another column. To find the lifespan of each prime minister we must separate the birth year and death year because it is originally in YYYY-YYYY or b. YYYY format, so that we have two columns, one with the birth year(born) and the other with death year(died). Finally, the lifespan(age at death) was calculated by subtracting died - born. However, there is an issue if we leave it here because there are prime ministers that are still alive and we must also calculate there ages instead of leaving it NA. Despite the fact that this paper is written during 2024, since we did not take into account the exact birth date and death date, it is more accurate to use 2023 for age calculation as it is still early in the year.
+
+Based off of the cleaned data, a graph that illustrates how long each prime minister lived. This cleaned data can be further manipulated to be used for questions like average lifespan of prime ministers of Canada, or produce another graph that includes how many prime ministers are still alive or not.
+
+```{r}
+#| echo: false
+#| include: true
+#| message: false
+#| tbl-cap: "Lifespan of prime ministers of Canada"
+#| ##Read in the data
+raw_data <-
+  read_html(
+    "https://en.wikipedia.org/wiki/List_of_prime_ministers_of_Canada"
+  )
+write_lines(as.character(raw_data), "pms.html")
+raw_data <- read_html("pms.html")
+second_wikitable <- raw_data %>%
+  html_elements(".wikitable") %>%
+  .[2]
+parse_data <- second_wikitable %>%
+  html_table()
+
+name_birth_death <- parse_data[[1]]$`Name(Birth–Death)`
+
+unique_prime_minister <- unique(name_birth_death)
+unique_prime_minister <- unique_prime_minister[-c(24)]
+
+pm_data <- data.frame(
+  unique_prime_minister,
+  stringAsFactors = FALSE
+)
+organized_data = select(pm_data, unique_prime_minister)
+
+cclean_data <- organized_data |>
+  separate(
+    unique_prime_minister, into = c("Prime_Minister", "not_name"), sep = "\\(", extra = "merge",
+  ) |>
+  mutate(
+    birth_death_year = str_replace_all(not_name, "\\(b\\. ([[:digit:]]{4})\\)", "\\1"),
+    born = str_extract(not_name, "born[[:space:]][[:digit:]]")
+  ) |>
+  select(Prime_Minister, birth_death_year, born)
+
+extract_years <- function(year_str) {
+  if (grepl("\\d{4}–\\d{4}", year_str)) {
+    born_died <- strsplit(gsub("[^0-9–]", "", year_str), "–")[[1]]
+  } else if (grepl("b\\. (\\d{4})", year_str)) {
+    born_died <- c(sub("\\D", "", regmatches(year_str, regexpr("\\d{4}", year_str))), NA)
+  } else {
+    born_died <- c(NA, NA)
+  }
+  
+  return(born_died)
+}
+
+cclean_data[c("born", "died")] <- t(sapply(cclean_data$birth_death_year, extract_years))
+
+cclean_data$born <- as.numeric(cclean_data$born)
+cclean_data$died[is.na(cclean_data$died)] <- 2023
+cclean_data$died <- as.numeric(cclean_data$died)
+cleans_data <-
+  cclean_data |>
+  mutate(Age_at_death = died - born) |>
+  select(Prime_Minister, born, died, Age_at_death)
+head(cleans_data, n = 10)
+```
+
+```{r}
+#| echo: false
+#| include: true
+#| message: false
+#| label: lifespan of prime ministers
+#| fig-cap: "Lifespan of Prime Ministers of Canada"
+cleans_data |>
+  ggplot(aes(x = born, xend = died, y = Prime_Minister, yend = Prime_Minister)) + geom_segment() +
+  labs(title = "Lifespan of Prime Ministers of Canada", x = "Year", y = "Prime Minister") + theme_minimal() +
+  scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+```
+
+Cleaning the data took much longer than expected because there were a plethora of issues that arise while the data was being cleaned. For example, the unique_prime_minister was not a data set as I expected, instead it was a value which was the reason the code was not running. Another example is that there were two types of birth_death_year format where one was in YYYY-YYYY and the other was b. YYYY. Due to this the code must be executed for the two different cases to clean up the data. While I was coding I kept running into the issue where one format would work but for the other format values it would keep having an error giving me NA. Figuring how to make the code work for both types of data formats took much longer than I initially expected. Despite the difficulty in certain parts, it was fun whenever I made progress because I was able to manipulate wrong parts of my code to produce data sets that I was thinking of and when it came out to be how I wanted it to be, it gave me joy. If a similar project is done again in the future, I would try to improve the graph and cleaned data so that the graph can include the prime ministers who have passed away in one color and alive in another color and organize the data set so that it is in descending order depending on when each prime minister has passed.
