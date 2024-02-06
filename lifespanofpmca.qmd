@@ -4,6 +4,7 @@ author: "Hyuk Jang"
 date: Feb 6, 2024
 format: pdf
 editor: visual
+Bibliography: ref.bib
 ---
 
 ```{r}
@@ -22,7 +23,9 @@ library(here)
 library(ggplot2)
 ```
 
-# Lifespan of Prime Minister's of Canada
+# Lifespan of Prime Minister's of Canada[^1]
+
+[^1]: <https://github.com/anggimude/Life-span-of-Canadian-Prime-Ministers>
 
 The question of interest in this paper is how long each prime minister of Canada has lived. The initial plan of the paper is to identify how long each prime minister has lived and the period of time when they lived.his is so that we can use this data to do further analysis in the future. For this reason we need to find and identify a source of data. We need a source of data that is reliable and has some sort of structure. The [Wikipedia page about prime ministers of Canada](https://en.wikipedia.org/wiki/List_of_prime_ministers_of_Canada) fits both of the criterion's. Below we have a sketch of what we want the data to look like once we have finished cleaning and produced a graph out of it.
 
@@ -109,3 +112,23 @@ cleans_data |>
 ```
 
 Cleaning the data took much longer than expected because there were a plethora of issues that arise while the data was being cleaned. For example, the unique_prime_minister was not a data set as I expected, instead it was a value which was the reason the code was not running. Another example is that there were two types of birth_death_year format where one was in YYYY-YYYY and the other was b. YYYY. Due to this the code must be executed for the two different cases to clean up the data. While I was coding I kept running into the issue where one format would work but for the other format values it would keep having an error giving me NA. Figuring how to make the code work for both types of data formats took much longer than I initially expected. Despite the difficulty in certain parts, it was fun whenever I made progress because I was able to manipulate wrong parts of my code to produce data sets that I was thinking of and when it came out to be how I wanted it to be, it gave me joy. If a similar project is done again in the future, I would try to improve the graph and cleaned data so that the graph can include the prime ministers who have passed away in one color and alive in another color and organize the data set so that it is in descending order depending on when each prime minister has passed.
+
+## Citation
+
+Firke, Sam. 2021. Janitor: Simple Tools for Examining and Cleaning Dirty Data. <https://CRAN.R-project.org/package=janitor.>
+
+Müller, Kirill, and Hadley Wickham. 2022. Tibble: Simple Data Frames. <https://CRAN.R-project.org/package=tibble.>
+
+R Core Team. 2020. R: A Language and Environment for Statistical Computing. Vienna, Austria: R Foundation for Statistical Computing. <https://www.R-project.org/.>
+
+Wickham H (2016). *ggplot2: Elegant Graphics for Data Analysis*. Springer-Verlag New York. ISBN 978-3-319-24277-4, [https://ggplot2.tidyverse.org](https://ggplot2.tidyverse.org/).
+
+Wickham, Hadley, Mara Averick, Jennifer Bryan, Winston Chang, Lucy D’Agostino McGowan, Romain François, Garrett Grolemund, et al. 2019. “Welcome to the tidyverse.” Journal of Open Source Software 4 (43): 1686. <https://doi.org/10.21105/joss.01686.>
+
+Wickham, Hadley, Romain François, Lionel Henry, and Kirill Müller. 2021. Dplyr: A Grammar of Data Manipulation. <https://CRAN.R-project.org/package=dplyr.>
+
+Wickham H (2023). *stringr: Simple, Consistent Wrappers for Common String Operations*. R package version 1.5.1, https://github.com/tidyverse/stringr, [https://stringr.tidyverse.org](https://stringr.tidyverse.org/).
+
+Wickham H (2023). *rvest: Easily Harvest (Scrape) Web Pages*. https://rvest.tidyverse.org/, https://github.com/tidyverse/rvest.
+
+Wickham H, Vaughan D, Girlich M (2024). *tidyr: Tidy Messy Data*. R package version 1.3.1, https://github.com/tidyverse/tidyr, [https://tidyr.tidyverse.org](https://tidyr.tidyverse.org/).
